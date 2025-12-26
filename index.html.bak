@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>All-in-One 10 Slot Games</title>
+  <style>
+    body{font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;background:#050505;color:#fff;text-align:center;margin:0;padding:10px}
+    .card{background:#111;border-radius:20px;padding:20px;margin:10px auto;max-width:420px;box-shadow:0 10px 30px rgba(0,0,0,0.7);border:1px solid #222}
+    
+    /* Slot Reel Animation */
+    .slot{display:flex;justify-content:center;margin:20px 0; gap:10px}
+    .reel{width:90px;height:90px;border-radius:15px;background:linear-gradient(145deg, #111, #222);border:3px solid #ffcc00;font-size:50px;display:flex;align-items:center;justify-content:center;box-shadow: inset 0 0 10px #000}
+    .spinning { animation: blur 0.1s infinite alternate; }
+    @keyframes blur { from { filter: blur(2px); transform: translateY(-5px); } to { filter: blur(6px); transform: translateY(5px); } }
+
+    button{background:#ffcc00;color:#000;font-weight:bold;padding:12px;border-radius:12px;border:none;cursor:pointer;width:100%;margin-top:10px;transition: 0.3s}
+    button:active{transform: scale(0.95)}
+    input, select{width:95%;padding:12px;margin:8px 0;border-radius:10px;border:none;background:#222;color:#fff;font-size:16px}
+    
+    .history-box{text-align:left;max-height:120px;overflow-y:auto;background:#000;padding:10px;border-radius:10px;font-size:13px;margin-top:15px; border: 1px solid #333}
+    .nav-buttons{display:flex; gap:10px; margin-top:15px}
+    .nav-buttons button{flex:1; font-size:12px; background:#333; color:#fff}
+    #resultText{margin:15px 0; font-size:1.2rem; color:#ffcc00}
+    
+    /* Modal Style */
+    .modal{display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); z-index:1000; width:90%; max-width:380px}
+    .overlay {display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:999}
+  </style>
+</head>
+<body>
+
+<div id="loginBox" class="card">
+  <h2>🍀 Lucky 10 Slots</h2>
+  <input id="email" placeholder="အီးမေးလ် (Email)" />
+  <input id="password" type="password" placeholder="စကားဝှက် (Password)" />
+  <button onclick="login()">ဝင်မည်</button>
+  <button onclick="register()" style="background:none;color:#ffcc00">အကောင့်အသစ်ဖွင့်မည်</button>
+</div>
+
+<div id="gameBox" class="card" style="display:none">
+  <div style="display:flex;justify-content:space-between;align-items:center">
+    <small id="userMail" style="color:#aaa"></small>
+    <div style="background:#222; padding:5px 15px; border-radius:20px; border:1px solid #ffcc00">
+      💰 <b id="balance">0</b>
+    </div>
+  </div>
+
+  <h4 style="margin-bottom:5px">ဂိမ်းအမျိုးအစားရွေးချယ်ပါ</h4>
+  <select id="gameTheme" onchange="changeTheme()">
+    <option value="classic">🎰 Classic 777</option>
+    <option value="fruit">🍎 Fruit Party</option>
+    <option value="ocean">🌊 Ocean King</option>
+    <option value="gold">💰 Gold Rush</option>
+    <option value="egypt">🏺 Pharaoh's Treasure</option>
+    <option value="candy">🍬 Candy Pop</option>
+    <option value="dragon">🐉 Dragon's Luck</option>
+    <option value="space">🚀 Starburst</option>
+    <option value="jungle">🐒 Jungle Safari</option>
+    <option value="gem">💎 Diamond Link</option>
+  </select>
+
+  <div class="slot">
+    <div class="reel" id="r1">?</div>
+    <div class="reel" id="r2">?</div>
+    <div class="reel" id="r3">?</div>
+  </div>
+
+  <select id="bet">
+    <option value="100">လောင်းကြေး 100</option>
+    <option value="500">လောင်းကြေး 500</option>
+    <option value="1000">လောင်းကြေး 1000</option>
+    <option value="5000">လောင်းကြေး 5000</option>
+  </select>
+
+  <button id="spinBtn" onclick="startSpin()" style="font-size:1.5rem; height:60px; background:#ffcc00">SPIN</button>
+  <div id="resultText">ကံစမ်းလိုက်ပါ!</div>
+
+  <div class="history-box" id="history"></div>
+
+  <div class="nav-buttons">
+    <button onclick="showModal('rechargeBox')">ငွေသွင်း</button>
+    <button onclick="showModal('withdrawBox')">ငွေထုတ်</button>
+    <button onclick="logout()">ထွက်မည်</button>
+  </div>
+</div>
+
+<div id="overlay" class="overlay" onclick="closeAllModals()"></div>
+
+<div id="rechargeBox" class="card modal">
+  <h3>💳 ငွေသွင်းရန်</h3>
+  <select id="method"><option>KPay</option><option>WavePay</option></select>
+  <input id="amount" type="number" placeholder="ပမာဏ (Amount)" />
+  <input id="txid" placeholder="Transaction ID (နောက်ဆုံး ၆ လုံး)" />
+  <button onclick="sendRecharge()">တင်ပြမည်</button>
+  <button onclick="closeAllModals()" style="background:none;color:#aaa">ပိတ်မည်</button>
+</div>
+
+<div id="withdrawBox" class="card modal">
+  <h3>💸 ငွေထုတ်ရန်</h3>
+  <input id="wAmount" type="number" placeholder="ထုတ်မည့်ပမာဏ" />
+  <input id="wPhone" placeholder="လက်ခံမည့်ဖုန်းနံပါတ်" />
+  <select id="wMethod"><option>KPay</option><option>WavePay</option></select>
+  <button onclick="sendWithdraw()" style="background:#ff4444; color:#fff">ထုတ်ယူမည်</button>
+  <button onclick="closeAllModals()" style="background:none;color:#aaa">ပိတ်မည်</button>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<script>
+// 🔥 ၁။ FIREBASE CONFIG (သင့်ကိုယ်ပိုင်အချက်အလက်များထည့်ပါ)
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  projectId: "YOUR_PROJECT",
+};
+
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+let balance = 0, uid = "", canSpin = true;
+
+const themes = {
+  classic: ["🍒", "🍋", "🔔", "⭐", "7️⃣"],
+  fruit: ["🍎", "🍇", "🍉", "🍍", "🍓"],
+  ocean: ["🐟", "🐙", "🦈", "🐚", "🧜‍♀️"],
+  gold: ["💰", "🪙", "💎", "🏦", "👑"],
+  egypt: ["🏺", "📜", "🦅", "🗿", "🏜️"],
+  candy: ["🍬", "🍭", "🍩", "🧁", "🍫"],
+  dragon: ["🐉", "🏮", "🧧", "⚔️", "🔥"],
+  space: ["🚀", "🪐", "👽", "☄️", "🛰️"],
+  jungle: ["🐒", "🐯", "🐍", "🍃", "🍌"],
+  gem: ["💎", "💍", "🧿", "📿", "✨"]
+};
+
+let currentSymbols = themes.classic;
+
+// --- AUTH ---
+function login(){
+  const mail = document.getElementById('email').value;
+  const pass = document.getElementById('password').value;
+  auth.signInWithEmailAndPassword(mail, pass).then(res => {
+    uid = res.user.uid;
+    initApp(res.user.email);
+  }).catch(e => alert("ဝင်ရောက်မှုမအောင်မြင်ပါ: " + e.message));
+}
+
+function register(){
+  const mail = document.getElementById('email').value;
+  const pass = document.getElementById('password').value;
+  auth.createUserWithEmailAndPassword(mail, pass).then(()=>login()).catch(e=>alert(e.message));
+}
+
+function initApp(mail){
+  document.getElementById('loginBox').style.display='none';
+  document.getElementById('gameBox').style.display='block';
+  document.getElementById('userMail').innerText = mail;
+  loadBalance();
+  monitorStatus();
+}
+
+function loadBalance(){
+  db.collection('users').doc(uid).onSnapshot(doc => {
+    if(doc.exists) {
+      balance = doc.data().balance;
+      document.getElementById('balance').innerText = balance;
+    } else {
+      db.collection('users').doc(uid).set({balance: 1000}); // လက်ဆောင် ၁၀၀၀
+    }
+  });
+}
+
+// --- GAME LOGIC (Win Rate 40%) ---
+function changeTheme() {
+  currentSymbols = themes[document.getElementById('gameTheme').value];
+  document.getElementById('r1').innerText = currentSymbols[0];
+  document.getElementById('r2').innerText = currentSymbols[1];
+  document.getElementById('r3').innerText = currentSymbols[2];
+}
+
+function startSpin(){
+  const bet = parseInt(document.getElementById('bet').value);
+  if(!canSpin || balance < bet) return alert("လက်ကျန်ငွေမလုံလောက်ပါ");
+  
+  canSpin = false;
+  balance -= bet;
+  db.collection('users').doc(uid).update({balance});
+  
+  document.querySelectorAll('.reel').forEach(r => r.classList.add('spinning'));
+  document.getElementById('resultText').innerText = "လှည့်နေသည်...";
+
+  setTimeout(() => stopSpin(bet), 1200);
+}
+
+function stopSpin(bet){
+  document.querySelectorAll('.reel').forEach(r => r.classList.remove('spinning'));
+  const r = () => currentSymbols[Math.floor(Math.random()*5)];
+  let res = [r(), r(), r()];
+
+  // Win Rate 40% Control
+  const chance = Math.random() * 100;
+  if (chance <= 40) {
+    const winSym = currentSymbols[Math.floor(Math.random()*5)];
+    res = (Math.random()*100 < 10) ? [winSym, winSym, winSym] : [winSym, winSym, r()];
+  } else {
+    while(res[0]===res[1] || res[1]===res[2] || res[0]===res[2]) res = [r(), r(), r()];
+  }
+
+  document.getElementById('r1').innerText = res[0];
+  document.getElementById('r2').innerText = res[1];
+  document.getElementById('r3').innerText = res[2];
+
+  let win = 0, msg = "နောင်တစ်ကြိမ်ပြန်ကြိုးစားပါ";
+  if(res[0]===res[1] && res[1]===res[2]) { win = bet*10; msg="🎰 JACKPOT WIN! +" + win; }
+  else if(res[0]===res[1] || res[1]===res[2] || res[0]===res[2]) { win = bet*2; msg="✅ WIN! +" + win; }
+
+  if(win > 0){
+    balance += win;
+    db.collection('users').doc(uid).update({balance});
+  }
+
+  document.getElementById('resultText').innerText = msg;
+  const h = document.getElementById('history');
+  h.innerHTML = `<div>${res.join(' ')} -> ${msg}</div>` + h.innerHTML;
+  canSpin = true;
+}
+
+// --- RECHARGE & WITHDRAW ---
+function sendRecharge(){
+  const amt = parseInt(document.getElementById('amount').value);
+  const tx = document.getElementById('txid').value;
+  if(!amt || !tx) return alert("အချက်အလက်ဖြည့်ပါ");
+  db.collection('recharge').add({ uid, email: auth.currentUser.email, amount: amt, txid: tx, status: 'pending', time: Date.now() });
+  alert("တင်ပြပြီးပါပြီ။ Admin အတည်ပြုတာစောင့်ပါ။");
+  closeAllModals();
+}
+
+function sendWithdraw(){
+  const wAmt = parseInt(document.getElementById('wAmount').value);
+  const wPh = document.getElementById('wPhone').value;
+  if(!wAmt || !wPh) return alert("အချက်အလက်ဖြည့်ပါ");
+  if(wAmt > balance) return alert("လက်ကျန်ငွေမလုံလောက်ပါ");
+  
+  balance -= wAmt;
+  db.collection('users').doc(uid).update({balance});
+  db.collection('withdraw').add({ uid, email: auth.currentUser.email, amount: wAmt, phone: wPh, status: 'pending', time: Date.now() });
+  alert("ငွေထုတ်ရန် တောင်းဆိုပြီးပါပြီ။");
+  closeAllModals();
+}
+
+function monitorStatus() {
+  // Recharge Approved Monitor
+  db.collection('recharge').where('uid','==',uid).where('status','==','approved').onSnapshot(snap => {
+    snap.forEach(doc => {
+      db.collection('users').doc(uid).update({ balance: firebase.firestore.FieldValue.increment(doc.data().amount) });
+      alert("💰 ငွေသွင်းမှုအောင်မြင်ပါသည်။ " + doc.data().amount + " ကျပ်ထည့်သွင်းပြီးပါပြီ။");
+      db.collection('recharge').doc(doc.id).delete();
+    });
+  });
+
+  // Withdraw Completed Monitor
+  db.collection('withdraw').where('uid','==',uid).where('status','==','completed').onSnapshot(snap => {
+    snap.forEach(doc => {
+      alert("✅ ငွေထုတ်ယူမှုအောင်မြင်ပါသည်။ " + doc.data().amount + " ကျပ်လွှဲပေးပြီးပါပြီ။");
+      db.collection('withdraw').doc(doc.id).delete();
+    });
+  });
+}
+
+// --- UI HELPER ---
+function showModal(id){ document.getElementById('overlay').style.display='block'; document.getElementById(id).style.display='block'; }
+function closeAllModals(){ document.getElementById('overlay').style.display='none'; document.querySelectorAll('.modal').forEach(m=>m.style.display='none'); }
+function logout(){ auth.signOut().then(()=>location.reload()); }
+</script>
+</body>
+</html>
